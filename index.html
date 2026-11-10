@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Ships</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="canvas-container">
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <div id="warning-banner" class="hidden">
+      <div class="warning-badge" id="warning-badge">!</div>
+      <div class="warning-body">
+        <div class="warning-title" id="warning-title">Collision</div>
+        <div class="warning-desc" id="warning-desc">Hull contact.</div>
+      </div>
+      <button class="warning-btn hidden" id="warning-reset-btn">Reset</button>
+    </div>
+
+    <div id="hud-overlay">
+      <div class="hud-top-row">
+        <div class="hud-track-bar" id="hud-track-bar">
+          <div class="track-status-item">
+            <span class="status-primary" id="hud-heading">000°</span>
+          </div>
+          <div class="track-status-sep"></div>
+          <div class="track-status-item" id="hud-station-info">
+            <span class="status-primary" id="hud-dock">—</span>
+          </div>
+        </div>
+
+        <div class="top-actions-group">
+          <button
+            class="hud-btn top-action-btn"
+            id="btn-top-controls"
+            title="Controls & help (H)"
+          >
+            ?
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-bottom-row">
+        <div class="bottom-left-stack">
+          <div class="bottom-left-buttons">
+            <button
+              class="hud-pill-btn"
+              id="btn-toggle-ship-config"
+              title="Ship configuration (T)"
+            >
+              Ship
+            </button>
+            <button
+              class="hud-pill-btn"
+              id="btn-toggle-world-config"
+              title="Chart configuration"
+            >
+              Chart
+            </button>
+          </div>
+        </div>
+
+        <div class="hud-controls-cluster" id="driver-console">
+          <div class="hud-floating-card cab-card telemetry-card">
+            <div class="telemetry-top">
+              <span class="telemetry-label">SPEED</span>
+              <span class="telemetry-unit">KN</span>
+            </div>
+            <div class="speed-box">
+              <span class="speed-num" id="hud-speed-num">0</span>
+            </div>
+            <div class="telemetry-actions">
+              <button class="btn-eb" id="btn-eb" title="All stop (X)">
+                ALL STOP
+              </button>
+            </div>
+          </div>
+
+          <div class="hud-floating-card cab-card levers-card">
+            <div class="levers-row">
+              <div class="lever-col">
+                <div class="lever-header">
+                  <span class="lever-label">PWR</span>
+                </div>
+                <div class="lever-track-wrapper" id="throttle-track">
+                  <div
+                    class="lever-fill throttle-fill"
+                    id="throttle-bar-fill"
+                  ></div>
+                  <div class="lever-handle" id="throttle-handle"></div>
+                </div>
+              </div>
+
+              <div class="lever-col">
+                <div class="lever-header">
+                  <span class="lever-label">RUD</span>
+                </div>
+                <div class="lever-track-wrapper" id="rudder-track">
+                  <div class="lever-fill brake-fill" id="rudder-bar-fill"></div>
+                  <div class="lever-handle" id="rudder-handle"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ship-config-card" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Ship Configuration</h2>
+          <button class="modal-close-btn" id="btn-close-ship-config">✕</button>
+        </div>
+        <div class="modal-content config-modal-content">
+          <div class="type-selector-group">
+            <button class="type-btn" id="btn-type-ferry">Ferry</button>
+            <button class="type-btn" id="btn-type-cargo">Cargo</button>
+            <button class="type-btn" id="btn-type-container">Container</button>
+          </div>
+          <div class="consist-weight-label" id="ship-meta"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="world-config-card" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Chart Configuration</h2>
+          <button class="modal-close-btn" id="btn-close-world-config">✕</button>
+        </div>
+        <div class="modal-content config-modal-content">
+          <div
+            class="section-label"
+            style="
+              margin: 0 0 6px;
+              color: #737373;
+              font-size: 11px;
+              font-family: var(--font-mono);
+            "
+          >
+            SIZE
+          </div>
+          <div class="type-selector-group">
+            <button class="size-btn" data-size="S">S</button>
+            <button class="size-btn" data-size="M">M</button>
+            <button class="size-btn" data-size="L">L</button>
+            <button class="size-btn" data-size="XL">XL</button>
+            <button class="size-btn" data-size="XXL">XXL</button>
+          </div>
+
+          <div
+            class="section-label"
+            style="
+              margin: 8px 0 6px;
+              color: #737373;
+              font-size: 11px;
+              font-family: var(--font-mono);
+            "
+          >
+            SEED
+          </div>
+          <div class="seed-input-group">
+            <input class="seed-input" id="seed-input" placeholder="Seed" />
+            <button class="seed-random-btn" id="btn-seed-random">Random</button>
+            <button class="seed-random-btn" id="btn-apply-seed">Apply</button>
+          </div>
+
+          <button class="world-regen-btn" id="btn-world-regenerate">
+            Regenerate chart
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="controls-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Controls</h2>
+          <button class="modal-close-btn" id="btn-close-controls">✕</button>
+        </div>
+        <div class="modal-content">
+          <div class="controls-grid">
+            <div class="control-row">
+              <span class="control-desc">Throttle (+ / −)</span>
+              <div class="control-keys">
+                <span class="key-badge">W</span>
+                <span class="key-badge">S</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-desc">Rudder (port / starboard)</span>
+              <div class="control-keys">
+                <span class="key-badge">A</span>
+                <span class="key-badge">D</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-desc">All stop</span>
+              <div class="control-keys"><span class="key-badge">X</span></div>
+            </div>
+            <div class="control-row">
+              <span class="control-desc">Center camera</span>
+              <div class="control-keys"><span class="key-badge">C</span></div>
+            </div>
+            <div class="control-row">
+              <span class="control-desc">Ship / regenerate / help</span>
+              <div class="control-keys">
+                <span class="key-badge">T</span>
+                <span class="key-badge">G</span>
+                <span class="key-badge">H</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-desc">Respawn after collision</span>
+              <div class="control-keys"><span class="key-badge">R</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
